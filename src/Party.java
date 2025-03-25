@@ -5,4 +5,8 @@ public class Party {
     public Party() {
         this.id = counter++;
     }
+
+    public int getId() {
+        return id;
+    }
 }

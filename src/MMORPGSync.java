@@ -44,14 +44,18 @@ public class MMORPGSync {
         ArrayList<Party> parties = createParties(t, h, d);
         System.out.println(parties.size());
         for (Party p: parties) dungeonQueue.addParty(p);
-        dungeonQueue.printQueue();
+
+        // Start MatchMaking
+        dungeonQueue.allocateDungeonsToParties();
+
+        // Print Summary
+        dungeonQueue.printSummary();
 
     }
 
     public static ArrayList<Party> createParties(int tankCount, int healerCount, int dpsCount) {
         ArrayList<Party> parties = new ArrayList<>();
 
-        // Improvement (Optional): Create player objects and add them literally to the party
         while (tankCount >= 1 && healerCount >= 1 && dpsCount >= 3) {
             parties.add(new Party());
 
