@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.*;
 
@@ -7,7 +6,7 @@ public class DungeonQueue {
     // n instances, t1, t2, parties
     private final int numberOfInstances;
     private final int t1, t2;
-    private final Queue<Party> partyQueue = new LinkedList<>();
+    private final Queue<Party> partyQueue = new ConcurrentLinkedQueue<>();
     private final Semaphore dungeonSlots;
     private int totalPartiesServed = 0;
     private int totalTimeServed = 0;
@@ -24,7 +23,6 @@ public class DungeonQueue {
     }
 
     public void  createParties(int tankCount, int healerCount, int dpsCount) {
-
         System.out.println(RED + "Creating Parties..." + RESET);
 
         ArrayList<Party> parties = new ArrayList<>();
@@ -51,7 +49,7 @@ public class DungeonQueue {
 
         // Print the table header with borders
         System.out.println("+----------------------+------------+------------+------------+");
-        System.out.printf("| %-20s | %-10s | %-10s | %-10s \n", "Dungeon ID", "Status", "Party ID", "Time");
+        System.out.printf("| %-20s | %-10s | %-10s | %-10s |\n", "Dungeon ID", "Status", "Party ID", "Time");
         System.out.println("+----------------------+------------+------------+------------+");
 
         // Create a custom ThreadFactory to name threads
@@ -65,15 +63,11 @@ public class DungeonQueue {
             }
         };
 
-        try (ExecutorService executor = Executors.newFixedThreadPool(numberOfInstances, namedThreadFactory)) {
+        ExecutorService executor = Executors.newFixedThreadPool(numberOfInstances, namedThreadFactory);
+        try {
             while (!partyQueue.isEmpty()) {
-                Party party;
-                synchronized (partyQueue) {
-                    if (partyQueue.isEmpty()) {
-                        break; // Exit the loop if there are no more parties
-                    }
-                    party = partyQueue.poll(); // Poll the party inside the synchronized block
-                }
+
+                Party party = partyQueue.poll();
                 dungeonSlots.acquire();
                 executor.submit(() -> {
                     String threadName = Thread.currentThread().getName();
@@ -100,14 +94,24 @@ public class DungeonQueue {
                         System.out.printf("| %-20s | %-10s | %-10s | %-10s |\n",
                                 threadName,
                                 RED + "Empty     " + RESET, // Assuming the dungeon is active when the party enters
-                                "",
-                                "");
+                                "-",
+                                "-");
 
                     }
                 });
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        } finally {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
         }
 
         if (totalPartiesServed == 0) {
