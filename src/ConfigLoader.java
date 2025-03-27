@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class ConfigLoader {
-    private int n;
-    private int t;
-    private int h;
-    private int d;
-    private int t1;
-    private int t2;
+    private final int n;
+    private final int t;
+    private final int h;
+    private final int d;
+    private final int t1;
+    private final int t2;
     private final Properties prop;
 
     public ConfigLoader() throws IOException {
@@ -46,13 +46,13 @@ public class ConfigLoader {
 
         try {
             int number = Integer.parseInt(value.trim());
-            if (number > 0) {
+            if (number >= 0) {
                 return number;
             } else {
-                throw new IllegalArgumentException("Invalid value for '" + key + "'. Must be a positive integer.");
+                throw new IllegalArgumentException("Invalid value for '" + key + "'. Must be a non-negative integer.");
             }
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid format for '" + key + "'. Must be a positive integer.");
+            throw new IllegalArgumentException("Invalid format for '" + key + "'. Must be a non-negative integer.");
         }
     }
 
