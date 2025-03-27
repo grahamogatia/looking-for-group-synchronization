@@ -25,7 +25,7 @@ public class DungeonQueue {
 
     public void  createParties(int tankCount, int healerCount, int dpsCount) {
 
-        System.out.println(RED + "---- Creating Parties... ----" + RESET);
+        System.out.println(RED + "Creating Parties..." + RESET);
 
         ArrayList<Party> parties = new ArrayList<>();
         while (tankCount >= 1 && healerCount >= 1 && dpsCount >= 3) {
@@ -47,12 +47,12 @@ public class DungeonQueue {
 
     public void executeDungeonRaids() {
 
-        System.out.println(RED + "---- Executing Dungeon Raids... ----" + RESET);
+        System.out.println(RED + "Executing Dungeon Raids..." + RESET);
 
         // Print the table header with borders
-        System.out.println("+----------------------+------------+------------+------------+------------+");
-        System.out.printf("| %-20s | %-10s | %-10s | %-10s | %-10s |\n", "Dungeon ID", "Status", "Party ID", "Time", "Permits");
-        System.out.println("+----------------------+------------+------------+------------+------------+");
+        System.out.println("+----------------------+------------+------------+------------+");
+        System.out.printf("| %-20s | %-10s | %-10s | %-10s \n", "Dungeon ID", "Status", "Party ID", "Time");
+        System.out.println("+----------------------+------------+------------+------------+");
 
         // Create a custom ThreadFactory to name threads
         ThreadFactory namedThreadFactory = new ThreadFactory() {
@@ -67,21 +67,26 @@ public class DungeonQueue {
 
         try (ExecutorService executor = Executors.newFixedThreadPool(numberOfInstances, namedThreadFactory)) {
             while (!partyQueue.isEmpty()) {
+                Party party;
+                synchronized (partyQueue) {
+                    if (partyQueue.isEmpty()) {
+                        break; // Exit the loop if there are no more parties
+                    }
+                    party = partyQueue.poll(); // Poll the party inside the synchronized block
+                }
                 dungeonSlots.acquire();
                 executor.submit(() -> {
                     String threadName = Thread.currentThread().getName();
-                    Party party = partyQueue.poll();
                     try {
                         if (party != null) {
                             // Simulate a dungeon run
                             int runTime = (int) (Math.random() * (t2 - t1 + 1) + t1);
 
-                            System.out.printf("| %-20s | %-10s | %-10d | %-10d | %-10d |\n",
+                            System.out.printf("| %-20s | %-10s | %-10d | %-10d |\n",
                                     threadName,
                                     GREEN + "Active    " + RESET, // Assuming the dungeon is active when the party enters
                                     party.getId(),
-                                    runTime,
-                                    dungeonSlots.availablePermits());
+                                    runTime);
                             TimeUnit.SECONDS.sleep(runTime);
 
                             // Update statistics
@@ -92,12 +97,11 @@ public class DungeonQueue {
                         Thread.currentThread().interrupt();
                     } finally {
                         dungeonSlots.release();
-                        System.out.printf("| %-20s | %-10s | %-10s | %-10s | %-10d |\n",
+                        System.out.printf("| %-20s | %-10s | %-10s | %-10s |\n",
                                 threadName,
                                 RED + "Empty     " + RESET, // Assuming the dungeon is active when the party enters
                                 "",
-                                "",
-                                dungeonSlots.availablePermits());
+                                "");
 
                     }
                 });
@@ -105,7 +109,12 @@ public class DungeonQueue {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        System.out.println("+----------------------+------------+------------+------------+------------+");
+
+        if (totalPartiesServed == 0) {
+            System.out.println("You must have a party to raid a dungeon ... ");
+        }
+
+        System.out.println("+----------------------+------------+------------+------------+");
         System.out.println();
     }
 
