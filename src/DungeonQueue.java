@@ -60,19 +60,18 @@ public class DungeonQueue {
             }
         };
 
+        // Allocate dungeon slots to parties
         ExecutorService executor = Executors.newFixedThreadPool(numberOfInstances, namedThreadFactory);
         try {
-            for (int i = 0; i < numberOfInstances; i++) {
+            while (!partyQueue.isEmpty()) {
+
+                Party party = partyQueue.poll();
                 executor.submit(() -> {
                     String threadName = Thread.currentThread().getName();
-                    Party party = null; // Initialize party variable
-
                     try {
-                        // Poll for a party before acquiring the semaphore
-                        party = partyQueue.poll();
                         if (party != null) {
                             // Simulate a dungeon run
-                            dungeonSlots.acquire(); // Acquire the semaphore only if we have a party
+                            dungeonSlots.acquire();
                             int runTime = (int) (Math.random() * (t2 - t1 + 1) + t1);
 
                             System.out.printf("| %-20s | %-10s | %-10d | %-10d |\n",
@@ -87,9 +86,8 @@ public class DungeonQueue {
                             totalTimeServed += runTime;
                         }
                     } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt(); // Preserve interrupt status
+                        Thread.currentThread().interrupt();
                     } finally {
-                        // Only release if we successfully acquired the semaphore
                         if (party != null) {
                             dungeonSlots.release();
                         }
@@ -98,6 +96,7 @@ public class DungeonQueue {
                                 RED + "Empty     " + RESET,
                                 "-",
                                 "-");
+
                     }
                 });
             }
