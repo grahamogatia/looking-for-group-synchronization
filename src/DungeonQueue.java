@@ -3,7 +3,6 @@ import java.util.Queue;
 import java.util.concurrent.*;
 
 public class DungeonQueue {
-    // n instances, t1, t2, parties
     private final int numberOfInstances;
     private final int t1, t2;
     private final Queue<Party> partyQueue = new ConcurrentLinkedQueue<>();
@@ -35,7 +34,7 @@ public class DungeonQueue {
         }
         partyQueue.addAll(parties);
 
-        /* Print party making summary */
+        // Party making results
         System.out.println("Parties created: " + GREEN + parties.size() + RESET);
         System.out.println("Leftover Tank Players: " + GREEN + tankCount + RESET);
         System.out.println("Leftover Healer Players: " + GREEN + healerCount + RESET);
@@ -44,15 +43,13 @@ public class DungeonQueue {
     }
 
     public void executeDungeonRaids() {
-
+        // Header
         System.out.println(RED + "Executing Dungeon Raids..." + RESET);
-
-        // Print the table header with borders
         System.out.println("+----------------------+------------+------------+------------+");
         System.out.printf("| %-20s | %-10s | %-10s | %-10s |\n", "Dungeon ID", "Status", "Party ID", "Time");
         System.out.println("+----------------------+------------+------------+------------+");
 
-        // Create a custom ThreadFactory to name threads
+        // Name dungeon threads
         ThreadFactory namedThreadFactory = new ThreadFactory() {
             private int threadCount = 0;
 
@@ -93,7 +90,7 @@ public class DungeonQueue {
                         dungeonSlots.release();
                         System.out.printf("| %-20s | %-10s | %-10s | %-10s |\n",
                                 threadName,
-                                RED + "Empty     " + RESET, // Assuming the dungeon is active when the party enters
+                                RED + "Empty     " + RESET,
                                 "-",
                                 "-");
 
@@ -122,7 +119,6 @@ public class DungeonQueue {
         System.out.println();
     }
 
-    // TODO: Print Summary
     public void printRaidsSummary() {
         System.out.println(RED + "---- Dungeon Raids Summary ----" + RESET);
         System.out.println("Total parties served: " + GREEN + totalPartiesServed + RESET);
