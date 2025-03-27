@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.*;
@@ -22,17 +23,31 @@ public class DungeonQueue {
         this.dungeonSlots = new Semaphore(n);
     }
 
-    public void addParty(Party party) {
-        partyQueue.add(party);
+    public void  createParties(int tankCount, int healerCount, int dpsCount) {
+
+        System.out.println(RED + "---- Creating Parties... ----" + RESET);
+
+        ArrayList<Party> parties = new ArrayList<>();
+        while (tankCount >= 1 && healerCount >= 1 && dpsCount >= 3) {
+            parties.add(new Party());
+
+            tankCount--;
+            healerCount--;
+            dpsCount-=3;
+        }
+        partyQueue.addAll(parties);
+
+        /* Print party making summary */
+        System.out.println("Parties created: " + GREEN + parties.size() + RESET);
+        System.out.println("Leftover Tank Players: " + GREEN + tankCount + RESET);
+        System.out.println("Leftover Healer Players: " + GREEN + healerCount + RESET);
+        System.out.println("Leftover DPS Players: " + GREEN + dpsCount + RESET);
+        System.out.println();
     }
 
-    // Testing
-    public void printQueue() {
-        System.out.println("Party Queue: " + partyQueue.size());
-    }
+    public void executeDungeonRaids() {
 
-    // TODO: Matchmaking
-    public void allocateDungeonsToParties() {
+        System.out.println(RED + "---- Executing Dungeon Raids... ----" + RESET);
 
         // Print the table header with borders
         System.out.println("+----------------------+------------+------------+------------+------------+");
@@ -91,11 +106,13 @@ public class DungeonQueue {
             Thread.currentThread().interrupt();
         }
         System.out.println("+----------------------+------------+------------+------------+------------+");
+        System.out.println();
     }
 
     // TODO: Print Summary
-    public void printSummary() {
-        System.out.println("Total parties served: " + totalPartiesServed);
-        System.out.println("Total time served: " + totalTimeServed + " seconds.");
+    public void printRaidsSummary() {
+        System.out.println(RED + "---- Dungeon Raids Summary ----" + RESET);
+        System.out.println("Total parties served: " + GREEN + totalPartiesServed + RESET);
+        System.out.println("Total time served: " + GREEN + totalTimeServed + RESET +" seconds.");
     }
 }
