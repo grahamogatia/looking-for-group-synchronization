@@ -62,15 +62,17 @@ public class DungeonQueue {
 
         ExecutorService executor = Executors.newFixedThreadPool(numberOfInstances, namedThreadFactory);
         try {
-            while (!partyQueue.isEmpty()) {
-
-                Party party = partyQueue.poll();
-                dungeonSlots.acquire();
+            for (int i = 0; i < numberOfInstances; i++) {
                 executor.submit(() -> {
                     String threadName = Thread.currentThread().getName();
+                    Party party = null; // Initialize party variable
+
                     try {
+                        // Poll for a party before acquiring the semaphore
+                        party = partyQueue.poll();
                         if (party != null) {
                             // Simulate a dungeon run
+                            dungeonSlots.acquire(); // Acquire the semaphore only if we have a party
                             int runTime = (int) (Math.random() * (t2 - t1 + 1) + t1);
 
                             System.out.printf("| %-20s | %-10s | %-10d | %-10d |\n",
@@ -85,20 +87,20 @@ public class DungeonQueue {
                             totalTimeServed += runTime;
                         }
                     } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
+                        Thread.currentThread().interrupt(); // Preserve interrupt status
                     } finally {
-                        dungeonSlots.release();
+                        // Only release if we successfully acquired the semaphore
+                        if (party != null) {
+                            dungeonSlots.release();
+                        }
                         System.out.printf("| %-20s | %-10s | %-10s | %-10s |\n",
                                 threadName,
                                 RED + "Empty     " + RESET,
                                 "-",
                                 "-");
-
                     }
                 });
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         } finally {
             executor.shutdown();
             try {
