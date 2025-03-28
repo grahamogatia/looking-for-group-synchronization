@@ -25,7 +25,10 @@ public class ConfigLoader {
             this.t1 = getValidatedIntProperty("t1");
             this.t2 = getValidatedIntProperty("t2");
 
-            // Ensure t1 <= t2
+
+            if (n == 0) {
+                throw new IllegalArgumentException("The maximum number of instances (n) cannot be zero. Dungeon raid with no dungeon  is .... eh?");
+            }
             if (t1 > t2) {
                 throw new IllegalArgumentException("t1 (" + t1 + ") cannot be greater than t2 (" + t2 + ").");
             }
